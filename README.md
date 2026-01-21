@@ -2,7 +2,7 @@
 
 An interactive 3D visualization of a Hybrid Siamese Network architecture for face recognition, combining VGGFace and FaceNet with Triplet and ArcFace loss functions.
 
-🔗 **[Live Demo](https://YOUR-USERNAME.github.io/siamese-network-viz/)** ← Replace with your actual GitHub Pages URL
+🔗 **[Live Demo](https://ahqjohn.github.io/siamese-network-viz/)** 
 
 ![Network Architecture](siamese_network_visualization.gif)
 
