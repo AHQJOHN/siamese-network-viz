@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive 3D visualization of a Hybrid Siamese Network architecture combining VGGFace and FaceNet with Triplet and ArcFace loss functions.">
+    <meta name="keywords" content="Siamese Network, Deep Learning, Face Recognition, VGGFace, FaceNet, Neural Network Visualization">
+    <meta name="author" content="ML Team">
+    <title>Hybrid Siamese Network 3D Visualization</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050510; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: white; }
+        #canvas-container { width: 100vw; height: 100vh; display: block; }
+        
+        /* UI Overlay */
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            pointer-events: none;
+            z-index: 100;
+            background: rgba(5, 5, 16, 0.8);
+            padding: 8px 15px;
+            border-radius: 5px;
+            border-left: 3px solid #00d2ff;
+        }
+        h1 {
+            margin: 0;
+            font-size: 20px;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        h2 {
+            margin: 3px 0 0 0;
+            font-size: 11px;
+            color: #8892b0;
+            font-weight: normal;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: absolute;
+            background: rgba(16, 20, 30, 0.9);
+            border: 1px solid #00d2ff;
+            padding: 15px;
+            border-radius: 8px;
+            pointer-events: none;
+            display: none;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.2);
+            max-width: 300px;
+            z-index: 20;
+        }
+        #tooltip h3 { margin: 0 0 5px 0; color: #00d2ff; font-size: 16px; }
+        #tooltip p { margin: 0; color: #ccc; font-size: 12px; line-height: 1.4; }
+        .math { font-family: 'Courier New', monospace; color: #ff9f43; background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px; }
+
+        /* Legend */
+        #legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.85);
+            padding: 10px 12px;
+            border-radius: 5px;
+            border-left: 2px solid #00d2ff;
+            max-width: 180px;
+        }
+        .legend-item { display: flex; align-items: center; margin-bottom: 4px; font-size: 10px; }
+        .color-box { width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; flex-shrink: 0; }
+
+        /* Loading */
+        #loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00d2ff;
+            font-size: 20px;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Component Details Panel */
+        #component-details {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            background: rgba(16, 20, 30, 0.95);
+            border: 2px solid #00d2ff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            max-width: 320px;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
+            animation: slideIn 0.3s ease-out;
+            z-index: 90;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        #component-details h3 {
+            margin: 0 0 8px 0;
+            color: #00d2ff;
+            font-size: 15px;
+            border-bottom: 1px solid #00d2ff;
+            padding-bottom: 5px;
+        }
+        #component-details .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 11px;
+            gap: 10px;
+        }
+        #component-details .detail-label {
+            color: #8892b0;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        #component-details .detail-value {
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.1);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            text-align: right;
+        }
+        #component-details .formula {
+            background: rgba(0, 210, 255, 0.1);
+            border-left: 3px solid #00d2ff;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #ff9f43;
+        }
+    </style>
+    <!-- Load Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Load OrbitControls -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="ui-layer">
+        <h1>Hybrid Siamese Network</h1>
+        <h2>VGGFace & FaceNet • ArcFace & Triplet Loss</h2>
+    </div>
+
+    <div id="loading">Initializing 3D Visualization...</div>
+
+    <div id="tooltip">
+        <h3 id="tt-title">Title</h3>
+        <p id="tt-desc">Description</p>
+    </div>
+
+    <div id="legend">
+        <div class="legend-item"><div class="color-box" style="background:#ff5252"></div>Input Images (A, P, N)</div>
+        <div class="legend-item"><div class="color-box" style="background:#4834d4"></div>VGGFace Branch</div>
+        <div class="legend-item"><div class="color-box" style="background:#686de0"></div>FaceNet Branch</div>
+        <div class="legend-item"><div class="color-box" style="background:#f0932b"></div>Fully Connected Layers</div>
+        <div class="legend-item"><div class="color-box" style="background:#2ecc71"></div>Embeddings</div>
+    </div>
+
+    <div id="component-details">
+        <h3 id="detail-title">Component Details</h3>
+        <div id="detail-content"></div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script src="js/network-visualization.js"></script>
+</body>
+</html>

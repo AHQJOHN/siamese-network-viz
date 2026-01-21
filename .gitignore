@@ -1,0 +1,9 @@
+# Files for local development only - not needed for GitHub Pages
+convert_to_gif.py
+requirements.txt
+.venv/
+__pycache__/
+*.pyc
+
+# Development version
+visualization.html
